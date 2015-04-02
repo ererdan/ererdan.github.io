@@ -28,7 +28,7 @@
 
       <section>
         <div id="title">
-          <h1>Graph Mining on GPU</h1>
+          <h1>Large Graph Mining on GPU</h1>
           <p></p>
           <hr>
           <span class="credits left">Project maintained by <a href="https://github.com/ererdan">ererdan</a></span>
@@ -36,28 +36,111 @@
         </div>
 
         <h3>
+<a id="Proposal" class="anchor" href="#Summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary</h3>
+
+<p>We want to implement large scale graph mining on GPUs and compare the runtime to the versions available for CPU.</p>
+
 <a id="Proposal" class="anchor" href="#Background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h3>
 
-<p> This project is inspired from PEGASUS. It converts graph mining problems to a matrix-vector multiplication and using sql operations to achieve the computation. Therefore the primitive operation is GIM-V (Generalized Iterated Matrix-Vector
-multiplication). Then it is implemented in Hadoop with some optimizations.
+<p> This project is inspired from PEGASUS, which runs graph mining algorithms on the top of Hadoop.
+The core idea of PEGASUS is converting graph mining problems to a matrix-vector multiplication and
+using sql operations to achieve the computation. Therefore the primitive operation is GIM-V
+(Generalized Iterated Matrix-Vector multiplication). Then it is implemented in Hadoop with some optimizations.
+(See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">their website</a> for details)</p>
+
+<p>Previously, we implemented a sequential version of GIM-V in SQL. We plan to use this as a baseline to
+measure the improvement of our code.
 </p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<h3>
+<a id="the-challege" class="anchor" href="#the-challenge" aria-hidden="true"><span class="octicon octicon-link"></span></a>Challenge</h3>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>The challenge of this project is scaling up GPU to work on a large dataset. Local memory is
+ limited, so we need to do many disk reads to compute over the entire graph. We need to
+ efficiently hide the latency of these reads, and also improve the compute time such that, even
+ with the additional latency, we still see a speed-up.</p>
+
+<p>Another challenge would be scaling up to use multiple GPUs. Communication between 
+GPUs will be difficult to implement, and also add further latency. A key point of our project will 
+be analyzing these trade offs.</p>
 
 <h3>
-<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Challenge</h3>
+<a id="resources" class="anchor" href="#resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resources</h3>
 
-<p>Since it is a part of project in 15826, we have already finished the sequential version in Postgresql.</p>
+<p>PEGASUS is an open source graph mining program, so we can directly download it from <a 
+href=“http://www.cs.cmu.edu/~pegasus/“>their website</a>.</p>
+
+<p>cuBLAS is provided by Nvidia to support the basic linear  algebra computing. And these 
+operations should have been well optimized. But we don’t know whether we can still use them 
+when we want to implement a scalable version, so we will try both this library and functions 
+developed by ourselves.</p>
 
 <h3>
-<a id="rather-drive-stick" class="anchor" href="#rather-drive-stick" aria-hidden="true"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals and Deliverables</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<h4>PLAN TO ACHIEVE</h4>
+<ul>
+<li>A GPU version of one or more graph mining algorithms. Specifically, we plan to implement PageRank and Connected Components.</li>
+<li>An analysis of PEGASUS, a sequential SQL version, and the GPU version on GB and TB sized graphs.</li>
+<li>A GPU version which effectively uses multiple GPUs.</li>
+</ul>
+
+<h4>HOPE TO ACHIEVE</h4>
+<ul>
+<li>A hybrid version of CPU and GPU which can beat the performance of GPU alone.</li>
+<li>Find an effective method to store sparse matrix on GPU (see <a href=“http://www.vldb.org/pvldb/vol4/p231-yang.pdf“>http://www.vldb.org/pvldb/vol4/p231-yang.pdf</a> )</li>
+</ul>
+
+<h4>DEMO</h4>
+<p>At our demo, we plan to present several graphs comparing the runtime of our 3 algorithms 
+on multiple input graphs for multiple graph mining algorithms. This should clearly show when 
+each algorithm is superior to the others.</p>
+
+<p>We probably won’t show a demo of our programs actually running, because it wouldn’t look 
+very interesting, and it might take a while to run.</p>
+
+<h4>WHAT WE HOPE TO LEARN</h4>
+<p>We want to discover if the improved compute time of GPUs is worth the possible overhead 
+of moving large quantities of data, such as those found in modern day graphs.</p>
+
+<h3>
+<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span class="octicon octicon-link"></span></a>Platform Choice</h3>
+
+<p>We plan to use the Latedays cluster to run our code, which will use Tesla K40 GPUs. The 
+K40 are advanced GPUs used for scientific computing. Also, Latedays has a large memory and 
+many multi-core CPUs making it ideal for parallelizing on the CPU as well. For consistency, we 
+will also run the sequential SQL version on Latedays. In contrast, PEGASUS uses Hadoop cloud 
+computing to run, so we can just run this with AWS.</p>
+
+<h3>
+<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schedule</h3>
+
+<p>Week 0: (March 30 - April 5)
+<ul>
+<li>Write project proposal.</li>
+<li>Investigate background material and available resources.</li>
+<li>Run PEGASUS on AWS with sample graph sets and record data.</li>
+</ul></p>
+<p>Week 1: (April 6 - April 12)
+<ul>
+<li>Implement basic GPU version of PageRank within small graph.</li>
+<li>Run SQL version on Latedays, record data results.</li>
+</ul></p>
+<p>Week 2: (April 13 - April 19)
+<ul>
+<li>Extend GPU version to handle TB graph on single core.</li>
+</ul></p>
+<p>Week 3 - 4: (April 20 - May 3)
+<ul>
+<li>Extend GPU version to use multiple GPUs.</li>
+<li>Optimize GPU version.</li>
+</ul></p>
+<p>Week 5: (May 3 - May 10)
+<ul>
+<li>Consider using hybrid of CPU and GPU.</li>
+<li>Run GPU version on Latedays with sample graph sets and record data.</li>
+<li>Compare and analyze results.</li>
+</ul></p>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
