@@ -49,7 +49,7 @@
 The core idea of PEGASUS is converting graph mining problems to a matrix-vector multiplication and
 using sql operations to achieve the computation. Therefore the primitive operation is GIM-V
 (Generalized Iterated Matrix-Vector multiplication). Then it is implemented in Hadoop with some optimizations.
-(See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">their website</a> for details)</p>
+(See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">this paper</a> for details)</p>
 
 <p>Previously, we implemented a sequential version of GIM-V in SQL. We plan to use this as a baseline to
 measure the improvement of our code.
@@ -71,7 +71,7 @@ be analyzing these trade offs.</p>
 <a id="resources" class="anchor" href="#resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resources</h3>
 
 <p>PEGASUS is an open source graph mining program, so we can directly download it from <a 
-href=“http://www.cs.cmu.edu/~pegasus/“>their website</a>.</p>
+href="http://www.cs.cmu.edu/~pegasus/">their website</a>.</p>
 
 <p>cuBLAS is provided by Nvidia to support the basic linear  algebra computing. And these 
 operations should have been well optimized. But we don’t know whether we can still use them 
@@ -91,7 +91,7 @@ developed by ourselves.</p>
 <h4>HOPE TO ACHIEVE</h4>
 <ul>
 <li>A hybrid version of CPU and GPU which can beat the performance of GPU alone.</li>
-<li>Find an effective method to store sparse matrix on GPU (see <a href=“http://www.vldb.org/pvldb/vol4/p231-yang.pdf“>http://www.vldb.org/pvldb/vol4/p231-yang.pdf</a> )</li>
+<li>Find an effective method to store sparse matrix on GPU (see <a href="http://www.vldb.org/pvldb/vol4/p231-yang.pdf">http://www.vldb.org/pvldb/vol4/p231-yang.pdf</a> )</li>
 </ul>
 
 <h4>DEMO</h4>
