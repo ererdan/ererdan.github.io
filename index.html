@@ -124,33 +124,46 @@ will also run the sequential SQL version on Latedays. In contrast, PEGASUS uses 
 computing to run, so we can just run this with AWS.</p>
 
 <h3>
-<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schedule</h3>
+<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schedule (Updated 4/20)</h3>
 
+<h4>IN REVIEW</h4>
 <p>Week 0: (March 30 - April 5)
 <ul>
-<li>Write project proposal.</li>
-<li>Investigate background material and available resources.</li>
-<li>Run PEGASUS on AWS with sample graph sets and record data.</li>
+<li>Write project proposal.<b>[COMPLETED]</b></li>
+<li>Investigate background material and available resources.<b>[COMPLETED]</b></li>
+<li>Run PEGASUS on AWS with sample graph sets and record data.<b>[ONGOING]</b></li>
 </ul></p>
 <p>Week 1: (April 6 - April 12)
 <ul>
-<li>Implement basic GPU version of PageRank within small graph.</li>
-<li>Run SQL version on Latedays, record data results.</li>
+<li>Implement basic GPU version of PageRank within small graph.<b>[COMPLETED for Multiplication]</b></li>
+<li>Run SQL version on Latedays, record data results.<b>[ONGOING]</b></li>
 </ul></p>
 <p>Week 2: (April 13 - April 19)
 <ul>
-<li>Extend GPU version to handle TB graph on single core.</li>
+<li>Extend GPU version to handle TB graph on single core.[NOT STARTED]</li>
 </ul></p>
-<p>Week 3 - 4: (April 20 - May 3)
+
+<h4>PLANNED SCHEDULE</h4>
+<p>Week 3: (April 20 - April 27)
 <ul>
-<li>Extend GPU version to use multiple GPUs.</li>
-<li>Optimize GPU version.</li>
+<li>hanzhou (1st half): Implemented PageRank for GPU.</li>
+<li>hanzhou (2nd half): Attempt basic GPU version on GB, TB graphs.</li>
+<li>srw: (1st half) Finish collecting data from AWS and PEGASUS with multiple graphs from <a href="http://snap.stanford.edu/data/index.html">stanford dataset</a>.</li>
+<li>srw: (2st half) Finish collecting data from SQL code on same graphs.</li>
+</ul></p>
+<p>Week 4: (April 27 - May 3)
+<ul>
+<li>hanzhou (1st half): Successfully run TB graphs on single core.</li>
+<li>hanzhou (2nd half): Attempt to run TB grpah GPU code on multiple cores.</li>
+<li>srw (1st half): Assist in GPU code optimization.</li>
+<li>srw (2nd half): Collect preliminary data from GPU code on test datasets.</li>
 </ul></p>
 <p>Week 5: (May 3 - May 10)
 <ul>
-<li>Consider using hybrid of CPU and GPU.</li>
-<li>Run GPU version on Latedays with sample graph sets and record data.</li>
-<li>Compare and analyze results.</li>
+<li>hanzhou (1st half): Final optimizations; bug fixes. Attempt CPU/GPU Hybrid if time allows.</li>
+<li>hanzhou (2nd half): Assist in analysis, presentation preparations.</li>
+<li>srw (1st half): Gather more results and graphically compare detailed statistics from three methods.</li>
+<li>srw (2nd half): Create powerpoint slides detailing results.</a>.</li>
 </ul></p>
 
 <p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
