@@ -49,16 +49,20 @@ Additional details of the code and results are summarized <a href="ProjectResult
 <h3>
 <a id="concerns" class="anchor" href="#concerns" aria-hidden="true"><span class="octicon octicon-link"></span></a>Concerns</h3>
 
-<p>At this point, we have solved most of the concerns in terms of ana
+<p>At this point, we have solved most of the logistical concerns for this project. We have access to all of the necessary resources (AWS and Latedays) and 
+as well as the test data, which we are getting from the <a href="snap.stanford.edu/data/index.html#wikipedia">Stanford Large Network Dataset Collection</a>. Beyond this, the only difficult challenge 
+remaining is to finish coding our GPU-optimized code. Since our project is primarily focused on comparative analysis, we will optimize our code as much as possible in 
+the remaining weeks, and then perform analysis using our best results.</p>
 
-<p>The challenge of this project is scaling up GPU to work on a large dataset. Local memory is
- limited, so we need to do many disk reads to compute over the entire graph. We need to
- efficiently hide the latency of these reads, and also improve the compute time such that, even
- with the additional latency, we still see a speed-up.</p>
+<p>It was mentioned before in the proposal, but we have still not addressed how to scale up GPU to large datasets. This remains a huge unknown. However, the primary 
+purpose of our project is, again, analysis. We aim to determine if it is possible to scale up GPU usage to large datasets efficiently. Therefore, 
+if we are not able to reach a sufficiently fast speed-up, we will discuss our approaches and try to analyse why they failed. Hence, even if we 
+cannot solve this hurdle, we should still be able to produce worthwhile results. Of course, we will try our best to produce good results on the GPU.</p>
 
-<p>Another challenge would be scaling up to use multiple GPUs. Communication between 
-GPUs will be difficult to implement, and also add further latency. A key point of our project will 
-be analyzing these trade offs.</p>
+<p>Rather than resources and code troubles, our biggest difficulties during the first half of this project has been coordination and time management. 
+Both members of the group were unexpectedly busy during the past two weeks, and did not properly prioritize this project, so we fell substantially behind schedule. 
+We still should be able to meet our goals, but in the second half of this project we hope to improve our efficiency. To this end, we will try to meet more frequently,
+at least once-twice a week in person, to increase accountability.</p>
 
 <h3>
 <a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals and Deliverables</h3>
