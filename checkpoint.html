@@ -36,32 +36,13 @@
 
         <h3>
 
-<p><a href="proposal.html">Project Proposal</a></p>
-        
-<p><a href="checkpoint.html">Project Checkpoint</a></p>
-        
 <p>By Han Zhou (hanzhou) and Shannon Williams (srw)</p>
 
-<h3><a id="summary" class="anchor" href="#summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary</h3>
-
-<p>We want to implement large scale graph mining on GPUs and compare the runtime to the versions available for CPU.</p>
+<p><a href="index.html">Main Page</a></p>
 
 <h3><a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress So Far (4/20)</h3>
 
 <p>We have made significant headway writing and optimizing code for the CUDA implementation of PageRank. Present result and findings can be found <a href="ProjectResults.pdf">here</a>
-
-<h3>
-<a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h3>
-
-<p> This project is inspired from PEGASUS, which runs graph mining algorithms on the top of Hadoop.
-The core idea of PEGASUS is converting graph mining problems to a matrix-vector multiplication and
-using sql operations to achieve the computation. Therefore the primitive operation is GIM-V
-(Generalized Iterated Matrix-Vector multiplication). Then it is implemented in Hadoop with some optimizations.
-(See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">this paper</a> for details)</p>
-
-<p>Previously, we implemented a sequential version of GIM-V in SQL. We plan to use this as a baseline to
-measure the improvement of our code.
-</p>
 
 <h3>
 <a id="the-challege" class="anchor" href="#the-challenge" aria-hidden="true"><span class="octicon octicon-link"></span></a>Challenge</h3>
