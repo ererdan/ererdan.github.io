@@ -40,12 +40,16 @@
 
 <p><a href="index.html">Main Page</a></p>
 
-<h3><a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress So Far (4/20)</h3>
+<h3><a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress So Far and Preliminary Results(4/20)</h3>
 
-<p>We have made significant headway writing and optimizing code for the CUDA implementation of PageRank. Present result and findings can be found <a href="ProjectResults.pdf">here</a>
+<p>So far, we have found sample graphs at <a href="http://snap.stanford.edu/data/index.html">http://snap.stanford.edu/data/index.html</a>, which we have converted into a usable 
+format. We wrote and ran a preliminary, functional program for multiplication on the GPU. Thereafter, we made optimizations to the code. 
+Additional details of the code and results are summarized <a href="ProjectResults.pdf">here</a>
 
 <h3>
-<a id="the-challege" class="anchor" href="#the-challenge" aria-hidden="true"><span class="octicon octicon-link"></span></a>Challenge</h3>
+<a id="concerns" class="anchor" href="#concerns" aria-hidden="true"><span class="octicon octicon-link"></span></a>Concerns</h3>
+
+<p>At this point, we have solved most of the concerns in terms of ana
 
 <p>The challenge of this project is scaling up GPU to work on a large dataset. Local memory is
  limited, so we need to do many disk reads to compute over the entire graph. We need to
@@ -57,31 +61,26 @@ GPUs will be difficult to implement, and also add further latency. A key point o
 be analyzing these trade offs.</p>
 
 <h3>
-<a id="resources" class="anchor" href="#resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resources</h3>
-
-<p>PEGASUS is an open source graph mining program, so we can directly download it from <a 
-href="http://www.cs.cmu.edu/~pegasus/">their website</a>.</p>
-
-<p>cuBLAS is provided by Nvidia to support the basic linear  algebra computing. And these 
-operations should have been well optimized. But we don’t know whether we can still use them 
-when we want to implement a scalable version, so we will try both this library and functions 
-developed by ourselves.</p>
-
-<h3>
 <a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals and Deliverables</h3>
 
 <h4>PLAN TO ACHIEVE</h4>
+
+<p>We previously planned to achieve 3 points:</p>
 <ul>
 <li>A GPU version of one or more graph mining algorithms. Specifically, we plan to implement PageRank and Connected Components.</li>
 <li>An analysis of PEGASUS, a sequential SQL version, and the GPU version on GB and TB sized graphs.</li>
 <li>A GPU version which effectively uses multiple GPUs.</li>
 </ul>
 
-<h4>HOPE TO ACHIEVE</h4>
-<ul>
-<li>A hybrid version of CPU and GPU which can beat the performance of GPU alone.</li>
-<li>Find an effective method to store sparse matrix on GPU (see <a href="http://www.vldb.org/pvldb/vol4/p231-yang.pdf">http://www.vldb.org/pvldb/vol4/p231-yang.pdf</a> )</li>
-</ul>
+<p>We are well on our way to achieving the first two points. We have already completed a 
+functional GPU version of multiplication which should easily extend to PageRank and 
+several other graph algorithms. Also, we have begun preparations for analysis of our other two systems, 
+which should not take substantially long to complete.</p>
+
+<p>However, saying this, we are substantially behind the anticipated schedule. We have not even started on the third bullet point. 
+We still have 3 weeks remaining, which should be sufficient for completing the third goal, but it is unlikely that we will have additional times 
+for our "hope to achieve" goals unless the effort we put into the second half substantially exceeds that 
+of the first half.</p>
 
 <h4>DEMO</h4>
 <p>At our demo, we plan to present several graphs comparing the runtime of our 3 algorithms 
@@ -91,22 +90,10 @@ each algorithm is superior to the others.</p>
 <p>We probably won’t show a demo of our programs actually running, because it wouldn’t look 
 very interesting, and it might take a while to run.</p>
 
-<h4>WHAT WE HOPE TO LEARN</h4>
-<p>We want to discover if the improved compute time of GPUs is worth the possible overhead 
-of moving large quantities of data, such as those found in modern day graphs.</p>
-
-<h3>
-<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span class="octicon octicon-link"></span></a>Platform Choice</h3>
-
-<p>We plan to use the Latedays cluster to run our code, which will use Tesla K40 GPUs. The 
-K40 are advanced GPUs used for scientific computing. Also, Latedays has a large memory and 
-many multi-core CPUs making it ideal for parallelizing on the CPU as well. For consistency, we 
-will also run the sequential SQL version on Latedays. In contrast, PEGASUS uses Hadoop cloud 
-computing to run, so we can just run this with AWS.</p>
-
 <h3>
 <a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schedule</h3>
 
+<h4>IN REVIEW</h4>
 <p>Week 0: (March 30 - April 5)
 <ul>
 <li>Write project proposal.<b>[COMPLETED]</b></li>
@@ -115,23 +102,35 @@ computing to run, so we can just run this with AWS.</p>
 </ul></p>
 <p>Week 1: (April 6 - April 12)
 <ul>
-<li>Implement basic GPU version of PageRank within small graph.<b>[COMPLETED]</b></li>
+<li>Implement basic GPU version of PageRank within small graph.<b>[COMPLETED for Multiplication]</b></li>
 <li>Run SQL version on Latedays, record data results.<b>[ONGOING]</b></li>
 </ul></p>
 <p>Week 2: (April 13 - April 19)
 <ul>
 <li>Extend GPU version to handle TB graph on single core.[NOT STARTED]</li>
 </ul></p>
-<p>Week 3 - 4: (April 20 - May 3)
+
+<h4>PLANNED SCHEDULE</h4>
+<p>Week 3: (April 20 - April 27)
 <ul>
-<li>Extend GPU version to use multiple GPUs.</li>
-<li>Optimize GPU version.</li>
+<li>hanzhou (1st half): Implemented PageRank for GPU.</li>
+<li>hanzhou (2nd half): Attempt basic GPU version on GB, TB graphs.</li>
+<li>srw: (1st half) Finish collecting data from AWS and PEGASUS with multiple graphs from <a href="http://snap.stanford.edu/data/index.html">stanford dataset</a>.</li>
+<li>srw: (2st half) Finish collecting data from SQL code on same graphs.</li>
+</ul></p>
+<p>Week 4: (April 27 - May 3)
+<ul>
+<li>hanzhou (1st half): Successfully run TB graphs on single core.</li>
+<li>hanzhou (2nd half): Attempt to run TB grpah GPU code on multiple cores.</li>
+<li>srw (1st half): Assist in GPU code optimization.</li>
+<li>srw (2nd half): Collect preliminary data from GPU code on test datasets.</li>
 </ul></p>
 <p>Week 5: (May 3 - May 10)
 <ul>
-<li>Consider using hybrid of CPU and GPU.</li>
-<li>Run GPU version on Latedays with sample graph sets and record data.</li>
-<li>Compare and analyze results.</li>
+<li>hanzhou (1st half): Final optimizations; bug fixes. Attempt CPU/GPU Hybrid if time allows.</li>
+<li>hanzhou (2nd half): Assist in analysis, presentation preparations.</li>
+<li>srw (1st half): Gather more results and graphically compare detailed statistics from three methods.</li>
+<li>srw (2nd half): Create powerpoint slides detailing results.</a>.</li>
 </ul></p>
 
 <p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
