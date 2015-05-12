@@ -71,7 +71,7 @@ measure the improvement of our code. The SQL implementation has the advantage of
 
 <p>Technologies: The following approach was done locally on a personal Lenovo machine. We coded in CUDA and C++.</p>
 
-<p>There are two steps of our implementation. Firstly, we try to process graphs which are small enough to store in memory. Considering the size of adjacent matrix is S(n^2), the number of nodes should not larger than O(10^5) when the common size of memory is GB. If the whole adjacent matrix can be stored in graph memory, then the Graph mining problems are just iteratively matrix-vector multiplications.</p>
+<p>There are two steps of our implementation: to first get a functional program for small graphs, then to extend it to larger graphs. For starters, we try to process graphs which are small enough to store in memory. Considering the size of adjacent matrix is S(n^2), the number of nodes should not larger than O(10^5) when the common size of memory is GB. If the whole adjacent matrix can be stored in graph memory, then the Graph mining problems are just iteratively matrix-vector multiplications.</p>
 
 <p>The naïve version is quite simple; a thread is used to compute one element of vector. However, from the code below we can find that different threads access data in different locations at the same time.</p>
 <p>result[tid]=matrix[tid][i]*vector[i]</p>
