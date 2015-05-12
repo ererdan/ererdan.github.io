@@ -44,7 +44,7 @@
 
 <h3><a id="summary" class="anchor" href="#summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary</h3>
 
-<p>We want to implement large scale graph mining on GPUs and compare the runtime to the versions available for CPU.</p>
+<p>We implemented a high-performance, large scale graph mining on GPUs which outstripped the CPU on a single machine. However, we could not extend it to multi-core, and so it cannot tackle arbitrarily large graphs as PEGASUS can.</p>
 
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h3>
@@ -63,11 +63,13 @@ using sql operations to achieve the computation. Therefore the primitive operati
 </ul>
 
 <p>Previously, we implemented a sequential version of GIM-V in SQL. We plan to use this as a baseline to
-measure the improvement of our code.
+measure the improvement of our code. The SQL implementation has the advantage of low cost memory reads and writes, but does not take advantage of parallel. CUDA can use parallelism to substantially reduce the computation time at the possible cost of memory latency. We wish to compare these trade-offs. Additionally, if possible, we would like to see if GPU can be used in a multi-core system to compete with large scale distributed systems such as PEGASUS. 
 </p>
 
 <h3>
 <a id="approach" class="anchor" href="#approach" aria-hidden="true"><span class="octicon octicon-link"></span></a>Approach</h3>
+
+<p>Technologies: The following approach was done locally on a personal Lenovo machine. We coded in CUDA and C++.</p>
 
 <p>There are two steps of our implementation. Firstly, we try to process graphs which are small enough to store in memory. Considering the size of adjacent matrix is S(n^2), the number of nodes should not larger than O(10^5) when the common size of memory is GB. If the whole adjacent matrix can be stored in graph memory, then the Graph mining problems are just iteratively matrix-vector multiplications.</p>
 
