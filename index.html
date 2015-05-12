@@ -46,10 +46,6 @@
 
 <p>We want to implement large scale graph mining on GPUs and compare the runtime to the versions available for CPU.</p>
 
-<h3><a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress So Far (4/20)</h3>
-
-<p>We have made significant headway writing and optimizing code for the CUDA implementation of PageRank. Present result and findings can be found <a href="ProjectResults.pdf">here</a>
-
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h3>
 
@@ -64,107 +60,61 @@ measure the improvement of our code.
 </p>
 
 <h3>
-<a id="the-challege" class="anchor" href="#the-challenge" aria-hidden="true"><span class="octicon octicon-link"></span></a>Challenge</h3>
+<a id="approach" class="anchor" href="#approach" aria-hidden="true"><span class="octicon octicon-link"></span></a>Approach</h3>
 
-<p>The challenge of this project is scaling up GPU to work on a large dataset. Local memory is
- limited, so we need to do many disk reads to compute over the entire graph. We need to
- efficiently hide the latency of these reads, and also improve the compute time such that, even
- with the additional latency, we still see a speed-up.</p>
+<p>There are two steps of our implementation. Firstly, we try to process graphs which are small enough to store in memory. Considering the size of adjacent matrix is S(n^2), the number of nodes should not larger than O(10^5) when the common size of memory is GB. If the whole adjacent matrix can be stored in graph memory, then the Graph mining problems are just iteratively matrix-vector multiplications.</p>
 
-<p>Another challenge would be scaling up to use multiple GPUs. Communication between 
-GPUs will be difficult to implement, and also add further latency. A key point of our project will 
-be analyzing these trade offs.</p>
+<p>The naïve version is quite simple; a thread is used to compute one element of vector. However, from the code below we can find that different threads access data in different locations at the same time.</p>
+<p>result[tid]=matrix[tid][i]*vector[i]</p>
+<p>For example, thread0 loads matrix[0][0], and thread1 loads matrix[1][0]. If the matrix is big enough, the two data may be in different rows of the memory, thus resulting in sequential access. So we modified our code as:</p>
+<p>result[tid]=matrix_transpose[i][tid]*vector[i]</p>
+</p>where matrix_transpose is the transpose of original matrix. Since the adjacent matrix is generated from node pairs in file, we can implement it simply by storing data in matrix[j][i] instead of matrix[i][j], which adds no additional workload.</p>
 
-<h3>
-<a id="resources" class="anchor" href="#resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resources</h3>
+<p>We then tried to use shared memory in CUDA model to achieve better performance. We noticed that threads in a block need to access same data of vector. So if each thread loads an element to the shared memory, the latency could be reduced by the shared memory size. Since the major IO latency is the adjacent matrix, the optimization is not very significant.</p>
 
-<p>PEGASUS is an open source graph mining program, so we can directly download it from <a 
-href="http://www.cs.cmu.edu/~pegasus/">their website</a>.</p>
+<p>CUDA also provides a library cuBLAS for the matrix-vector multiplication. It is well optimized. The main latency is creating handle, which is the plan of operations. But once the plan is created, it can be used to all same operations with different parameters and sizes. Considering the advantages, we choose the cuBLAS for our first step implementation.</p>
 
-<p>cuBLAS is provided by Nvidia to support the basic linear  algebra computing. And these 
-operations should have been well optimized. But we don’t know whether we can still use them 
-when we want to implement a scalable version, so we will try both this library and functions 
-developed by ourselves.</p>
+<p>For the first step of our project we used the wiki-Vote graph provided by Stanford's SNAP Dataset. It contains 7115 nodes with 103,689 edges. So the size of adjacent matrix is 7115*7115*4B = 200 MB. We tested the PageRank algorithm in both Postgres and CUDA</p>
+
+<p>The second step of our project is to deal with larger graph which can not be stored in memory. For this, we considered the Stanford web graph, with 281,903 nodes and 2,312,497 edges. We find that the adjacent matrix of graph in real life is usually a sparse one. Then we decides to fine some effective method to store the adjacent matrix. There are some format of sparse matrix provided by Nvidia. Diagonal format stores compressed matrix and the offsets, and EllPack Format stores indices matrix instead of offset arrays. In our problem, the Compressed Sparse Row Format is more suitable, which changes the 2D-structure to 1D-array. To be more specific, it stores all the none-zero values in a array, and use another two value to clarify different rows and different column indices. This method is quite space saving, which reduces the complexity from S(n^2) to S(n). However, generating this format from node pairs in file is expensive and complex.</p>
+
+<p>The first problem is we need to transpose the adjacent matrix to do the multiplication. But transposing from the CSR format is very expensive. To solve this problem, we choose to storing columns arrays instead of row ones. The potential problem with this solution is that it increases the difficulty of normalizing rows of matrix. In the row-based format, the trap nodes, which have zero-value in the whole row, can be assigned with average value in the row. However, in the column-based format, the values are scattered in different places, thus inserting them to arrays is quite low-efficient. What we choose to do is to ignore these trap nodes in the multiplication. Instead, since these value are with the same row-indices, we can keep a constancy array, multiplying this with pagerank vector, and adding results to the vector. This is additional work, which increases the latency of computing, but will reduce the complexity as well as time in generating the sparse matrix.</p>
 
 <h3>
-<a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals and Deliverables</h3>
+<a id="results" class="anchor" href="#results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Results</h3>
 
-<h4>PLAN TO ACHIEVE</h4>
+<p>Below, we have the results of running the PageRank algorithm with our CUDA code against our Postgresql code on wiki-Vote, our relatively small graph with only 7115 nodes with 103,689 edges; a 7115*7115*4B = 200 MB graph.</p>
+
+<img src="images/results.png" alt="Comparison of Postgres and CUDA Results">
+
+<p>We can see that the implementation achieves 50x speedup in CUDA.</p>
+
+<p>In addition to the high space utilization, using sparse matrix format also greatly helps decrease the computing complexity. In the naïve version, matrix-vector multiplication is O(n^3). But in the new version, the complexity decreases to just O(n). The result of Wiki-Vote proves the optimization. When adopting the new method, latency of 1-iteration of Wiki-Vote pageRank is only 1.7ms, which is a 10x speedup.</p>
+
+<p> The space utilization decreases from 300GB to just 10MB. That is, the sparse matrix method can support much larger dataset using a single GPU and achieves better performance.</p>
+
+<p>Since the common content of graph memory is 2~4GB. The sparse method can deal with graph with about 1G nodes in a single GPU. If there are graph with larger size, for example, roadNet-PA has 1,088,092 nodes and is a un-directed graph, which doubles the matrix size.  Then a single GPU cannot solve the problem. One solution is to do multi-times disk-IO, reading data from disk to memory, then transferring data to graph memory. The method is quite time-consuming, but can be improved by using asynchronous IO operations. CUDA provides asynchronous functions to load or store data between graph memory and memory. So it can be executed simultaneously with computing process. Another solution is scaling out, multi-GPU in clusters may help. But the communication between nodes is a difficult problem, and may result to high-latency.</p>
+
+<p>From this, we have shown CUDA to be a viable contender for graph anaylsis. It is cheap and portable. A single PC with advanced GPU can achieve quite good performance. Also, it is easy to use. The develop cycle is short, and debug is easy.</p>
+
+<p>However, CUDA has limitations. In our allocated time for the project, we were unable to achieve a functional, multi-core GPU program, as was one of our original goals. Using only a single core, even with a sparse matrix we have size limitations.</p>
+
+<h3>
+<a id="work" class="anchor" href="#work" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h3>
 <ul>
-<li>A GPU version of one or more graph mining algorithms. Specifically, we plan to implement PageRank and Connected Components.</li>
-<li>An analysis of PEGASUS, a sequential SQL version, and the GPU version on GB and TB sized graphs.</li>
-<li>A GPU version which effectively uses multiple GPUs.</li>
+<li>Bell, Nathan, and Michael Garland. Efficient sparse matrix-vector multiplication on CUDA. Vol. 2. No. 5. Nvidia Technical Report NVR-2008-004, Nvidia Corporation, 2008.</li>
+<li>Kang, U., Charalampos E. Tsourakakis, and Christos Faloutsos. "Pegasus: mining peta-scale graphs." Knowledge and information systems 27.2 (2011): 303-325.</li>
+<li>Leskovec, Jure, and Andrej Krevl. "SNAP Datasets." Stanford Large Network Dataset Collection. Web. 11 May 2015. http://snap.stanford.edu/data/index.html.</li>
 </ul>
 
-<h4>HOPE TO ACHIEVE</h4>
+<h3>
+<a id="work" class="anchor" href="#work" aria-hidden="true"><span class="octicon octicon-link"></span></a>List of Work</h3>
+<p> Although much of the planning and effort was done collaboratively, the work was divided approximately as follows:
 <ul>
-<li>A hybrid version of CPU and GPU which can beat the performance of GPU alone.</li>
-<li>Find an effective method to store sparse matrix on GPU (see <a href="http://www.vldb.org/pvldb/vol4/p231-yang.pdf">http://www.vldb.org/pvldb/vol4/p231-yang.pdf</a> )</li>
+<li>hanzhou: Primary contributor to code; responsible for sparse matrices, results analysis</li>
+<li>srw: Environment set up, running test sets, reference work with Pegasus and Hadoop, website management</li>
 </ul>
-
-<h4>DEMO</h4>
-<p>At our demo, we plan to present several graphs comparing the runtime of our 3 algorithms 
-on multiple input graphs for multiple graph mining algorithms. This should clearly show when 
-each algorithm is superior to the others.</p>
-
-<p>We probably won’t show a demo of our programs actually running, because it wouldn’t look 
-very interesting, and it might take a while to run.</p>
-
-<h4>WHAT WE HOPE TO LEARN</h4>
-<p>We want to discover if the improved compute time of GPUs is worth the possible overhead 
-of moving large quantities of data, such as those found in modern day graphs.</p>
-
-<h3>
-<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span class="octicon octicon-link"></span></a>Platform Choice</h3>
-
-<p>We plan to use the Latedays cluster to run our code, which will use Tesla K40 GPUs. The 
-K40 are advanced GPUs used for scientific computing. Also, Latedays has a large memory and 
-many multi-core CPUs making it ideal for parallelizing on the CPU as well. For consistency, we 
-will also run the sequential SQL version on Latedays. In contrast, PEGASUS uses Hadoop cloud 
-computing to run, so we can just run this with AWS.</p>
-
-<h3>
-<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schedule (Updated 4/20)</h3>
-
-<h4>IN REVIEW</h4>
-<p>Week 0: (March 30 - April 5)
-<ul>
-<li>Write project proposal.<b>[COMPLETED]</b></li>
-<li>Investigate background material and available resources.<b>[COMPLETED]</b></li>
-<li>Run PEGASUS on AWS with sample graph sets and record data.<b>[ONGOING]</b></li>
-</ul></p>
-<p>Week 1: (April 6 - April 12)
-<ul>
-<li>Implement basic GPU version of PageRank within small graph.<b>[COMPLETED for Multiplication]</b></li>
-<li>Run SQL version on Latedays, record data results.<b>[ONGOING]</b></li>
-</ul></p>
-<p>Week 2: (April 13 - April 19)
-<ul>
-<li>Extend GPU version to handle TB graph on single core.[NOT STARTED]</li>
-</ul></p>
-
-<h4>PLANNED SCHEDULE</h4>
-<p>Week 3: (April 20 - April 27)
-<ul>
-<li>hanzhou (1st half): Implemented PageRank for GPU.</li>
-<li>hanzhou (2nd half): Attempt basic GPU version on GB, TB graphs.</li>
-<li>srw: (1st half) Finish collecting data from AWS and PEGASUS with multiple graphs from <a href="http://snap.stanford.edu/data/index.html">stanford dataset</a>.</li>
-<li>srw: (2st half) Finish collecting data from SQL code on same graphs.</li>
-</ul></p>
-<p>Week 4: (April 27 - May 3)
-<ul>
-<li>hanzhou (1st half): Successfully run TB graphs on single core.</li>
-<li>hanzhou (2nd half): Attempt to run TB grpah GPU code on multiple cores.</li>
-<li>srw (1st half): Assist in GPU code optimization.</li>
-<li>srw (2nd half): Collect preliminary data from GPU code on test datasets.</li>
-</ul></p>
-<p>Week 5: (May 3 - May 10)
-<ul>
-<li>hanzhou (1st half): Final optimizations; bug fixes. Attempt CPU/GPU Hybrid if time allows.</li>
-<li>hanzhou (2nd half): Assist in analysis, presentation preparations.</li>
-<li>srw (1st half): Gather more results and graphically compare detailed statistics from three methods.</li>
-<li>srw (2nd half): Create powerpoint slides detailing results.</a>.</li>
-</ul></p>
+</p>
 
 <p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
       </section>
