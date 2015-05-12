@@ -52,8 +52,15 @@
 <p> This project is inspired from PEGASUS, which runs graph mining algorithms on the top of Hadoop.
 The core idea of PEGASUS is converting graph mining problems to a matrix-vector multiplication and
 using sql operations to achieve the computation. Therefore the primitive operation is GIM-V
-(Generalized Iterated Matrix-Vector multiplication). Then it is implemented in Hadoop with some optimizations.
-(See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">this paper</a> for details)</p>
+(Generalized Iterated Matrix-Vector multiplication). Then it is implemented in Hadoop with some optimizations. See: <a href="http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf">this paper</a> for details.</p>
+
+<p>One such algorithm is the PageRank algorithm, which we chose to use for our tests. The PageRank algorithm can be defined iteratively as follows: <b>p<sub>i+1</sub>=(cE<sup>T</sup>+(1−c)U) p<sub>i</sub></b>, where:</p>
+<ul>
+<li>p<sub>i</sub>: the page ranking on step i</li>
+<li>E: row-normalized adjacency matrix</li>
+<li>c: dampening factor</li>
+<li>U: constant matrix with values 1/n</li>
+</ul>
 
 <p>Previously, we implemented a sequential version of GIM-V in SQL. We plan to use this as a baseline to
 measure the improvement of our code.
@@ -97,7 +104,7 @@ measure the improvement of our code.
 
 <p>From this, we have shown CUDA to be a viable contender for graph anaylsis. It is cheap and portable. A single PC with advanced GPU can achieve quite good performance. Also, it is easy to use. The develop cycle is short, and debug is easy.</p>
 
-<p>However, CUDA has limitations. In our allocated time for the project, we were unable to achieve a functional, multi-core GPU program, as was one of our original goals. Using only a single core, even with a sparse matrix we have size limitations.</p>
+<p>However, CUDA has limitations. In our allocated time for the project, we were unable to achieve a functional, multi-core GPU program, as was one of our original goals. Using only a single core, even with a sparse matrix we have size limitations. We cannot scale up to an arbitrarily large graph. Given a graph which fits on a single core, we can see that CUDA has excellent performance. However, given our current results we cannot say that CUDA is a replacement for large, highly-scalable distributed programs such a Pegasus.</p>
 
 <h3>
 <a id="work" class="anchor" href="#work" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h3>
